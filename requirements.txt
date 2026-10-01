@@ -1,0 +1,5 @@
+google-adk
+mcp
+psycopg[binary]
+fastapi
+uvicorn[standard]

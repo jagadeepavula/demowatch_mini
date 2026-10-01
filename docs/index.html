@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overwatch Mini</title>
+<style>
+:root{--bg:#f5f7f8;--card:#fff;--fg:#14232b;--muted:#56666f;--line:#c9d3d8;--accent:#0b6e8a;--accent-fg:#fff;--soft:#dcedf2;--mono:ui-monospace,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1a20;--card:#16252d;--fg:#e4edf1;--muted:#9bb0ba;--line:#2f4450;--accent:#5cc3de;--accent-fg:#06222b;--soft:#173843}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.app{max-width:760px;height:100%;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+header h1{font-size:1.2rem;margin:0}
+header p{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+#log{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:4px 0}
+.msg{max-width:88%;padding:10px 14px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere}
+.me{align-self:flex-end;background:var(--accent);color:var(--accent-fg)}
+.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line)}
+.steps{align-self:flex-start;max-width:88%;font:12px/1.5 var(--mono);color:var(--muted);background:var(--soft);border-radius:6px;padding:8px 10px;overflow-wrap:anywhere}
+.steps b{color:var(--fg);font-weight:600}
+.hints{display:flex;flex-wrap:wrap;gap:8px}
+.hints button{font:inherit;font-size:.85rem;padding:6px 10px;border-radius:99px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+form{display:flex;gap:8px}
+input{flex:1;min-width:0;font:inherit;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+form button{font:inherit;font-weight:600;padding:10px 16px;border-radius:8px;border:0;background:var(--accent);color:var(--accent-fg);cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Overwatch Mini</h1>
+    <p>Ask about incidents and logs. The grey lines show which agent called which tool.</p>
+  </header>
+  <div id="log" aria-live="polite"></div>
+  <div class="hints" id="hints"></div>
+  <form id="f">
+    <input id="q" autocomplete="off" placeholder="Is INC0428 still open?" aria-label="Your question">
+    <button id="send">Send</button>
+  </form>
+</div>
+<script src="config.js"></script>
+<script>
+const log = document.getElementById("log"), q = document.getElementById("q"), send = document.getElementById("send");
+let sessionId = null;
+
+const HINTS = ["Is INC0428 still open?", "Show error logs for payments", "Which incidents are open, and do those services have errors in the logs?"];
+for (const h of HINTS) {
+  const b = document.createElement("button"); b.type = "button"; b.textContent = h;
+  b.onclick = () => ask(h); document.getElementById("hints").append(b);
+}
+
+function add(cls, text) {
+  const d = document.createElement("div"); d.className = cls; d.textContent = text;
+  log.append(d); log.scrollTop = log.scrollHeight; return d;
+}
+
+async function ask(text) {
+  text = text.trim(); if (!text) return;
+  q.value = ""; send.disabled = true;
+  add("msg me", text);
+  const wait = add("msg bot", "Thinking…");
+  try {
+    const r = await fetch(window.API_URL + "/chat", {
+      method: "POST", headers: {"content-type": "application/json"},
+      body: JSON.stringify({message: text, session_id: sessionId})
+    });
+    if (!r.ok) throw new Error("Server returned " + r.status);
+    const data = await r.json();
+    sessionId = data.session_id;
+    wait.textContent = data.reply;
+    if (data.steps.length) {
+      const s = document.createElement("div"); s.className = "steps";
+      data.steps.forEach((st, i) => {
+        const line = document.createElement("div");
+        const who = document.createElement("b"); who.textContent = st.agent;
+        line.append(who, " → " + st.call + "(" + JSON.stringify(st.args) + ")");
+        s.append(line);
+      });
+      log.append(s); log.scrollTop = log.scrollHeight;
+    }
+  } catch (e) {
+    wait.textContent = "Could not reach the backend (" + e.message + "). Check API_URL in config.js and that the server is running.";
+  } finally { send.disabled = false; q.focus(); }
+}
+document.getElementById("f").onsubmit = e => { e.preventDefault(); ask(q.value); };
+</script>
+</body>
+</html>
