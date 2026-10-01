@@ -1,4 +1,4 @@
-"""Overwatch-mini: a root agent that delegates to two specialist agents.
+"""demowatch_mini: a root agent that delegates to two specialist agents.
 
    ops_assistant (root)
      |-- incidents_agent --MCP--> itsm_server.py --> Supabase itsm.incidents

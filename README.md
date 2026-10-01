@@ -1,4 +1,4 @@
-# Overwatch Mini
+# demowatch_mini
 
 ```
 GitHub Pages chat (docs/)  --HTTPS-->  Cloud Run backend (server.py)
@@ -44,13 +44,13 @@ Questions to try:
 
 ## Step 3. Put the code on GitHub and publish the page
 ```bash
-git init && git add . && git commit -m "Overwatch mini"
+git init && git add . && git commit -m "demowatch_mini"
 git branch -M main
-git remote add origin https://github.com/<you>/overwatch-mini.git
+git remote add origin https://github.com/<you>/demowatch_mini.git
 git push -u origin main
 ```
 On GitHub: repo -> Settings -> Pages -> Source: **Deploy from a branch** -> `main` / `/docs` -> Save.
-Your page appears at `https://<you>.github.io/overwatch-mini/` in a minute or two.
+Your page appears at `https://<you>.github.io/demowatch_mini/` in a minute or two.
 `.env` is in `.gitignore`. Never commit it.
 
 ## Step 4. Deploy the backend to Cloud Run
@@ -65,7 +65,8 @@ SA=$(gcloud projects describe $PROJECT --format='value(projectNumber)')-compute@
 gcloud secrets add-iam-policy-binding db-url --member=serviceAccount:$SA --role=roles/secretmanager.secretAccessor
 gcloud projects add-iam-policy-binding $PROJECT --member=serviceAccount:$SA --role=roles/aiplatform.user
 
-gcloud run deploy overwatch-mini --source . --region us-central1 \
+# Cloud Run service names use hyphens rather than underscores.
+gcloud run deploy demowatch-mini --source . --region us-central1 \
   --allow-unauthenticated --max-instances 2 \
   --set-secrets DATABASE_URL=db-url:latest \
   --set-env-vars GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=$PROJECT,GOOGLE_CLOUD_LOCATION=us-central1,ALLOWED_ORIGINS=https://<you>.github.io

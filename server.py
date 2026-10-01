@@ -18,11 +18,11 @@ from pydantic import BaseModel, Field
 
 from ops_agent.agent import root_agent
 
-APP = "overwatch_mini"
+APP = "demowatch_mini"
 sessions = InMemorySessionService()
 runner = Runner(agent=root_agent, app_name=APP, session_service=sessions)
 
-app = FastAPI(title="Overwatch Mini")
+app = FastAPI(title="demowatch_mini")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",")],
