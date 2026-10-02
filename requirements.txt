@@ -1,5 +1,5 @@
 google-adk
-mcp
+mcp<2
 psycopg[binary]
 fastapi
 uvicorn[standard]
