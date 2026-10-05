@@ -3,4 +3,5 @@
 __pycache__/
 *.pyc
 .git
-docs/
+ops_agent/.adk/
+eval/results_*.jsonl

@@ -65,4 +65,7 @@ async def chat(body: ChatIn):
 
 
 # Serve the chat page from the same server (http://localhost:8080). Must stay LAST so /chat and /health win.
-app.mount("/", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "docs"), html=True), name="ui")
+# Skipped when the docs folder is not in the container (the page can live on GitHub Pages only).
+_docs = os.path.join(os.path.dirname(__file__), "docs")
+if os.path.isdir(_docs):
+    app.mount("/", StaticFiles(directory=_docs, html=True), name="ui")
