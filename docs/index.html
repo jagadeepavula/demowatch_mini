@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>demowatch_mini</title>
+<title>Overwatch Mini</title>
+<link rel="icon" href="data:,">
 <style>
 :root{--bg:#f5f7f8;--card:#fff;--fg:#14232b;--muted:#56666f;--line:#c9d3d8;--accent:#0b6e8a;--accent-fg:#fff;--soft:#dcedf2;--mono:ui-monospace,Menlo,Consolas,monospace}
 @media (prefers-color-scheme:dark){:root{--bg:#0f1a20;--card:#16252d;--fg:#e4edf1;--muted:#9bb0ba;--line:#2f4450;--accent:#5cc3de;--accent-fg:#06222b;--soft:#173843}}
@@ -31,13 +32,13 @@ button:disabled{opacity:.5;cursor:default}
 <body>
 <div class="app">
   <header>
-    <h1>demowatch_mini</h1>
-    <p>Ask about incidents and logs. The grey lines show which agent called which tool.</p>
+    <h1>Overwatch Mini</h1>
+    <p>Ask about incidents, logs and metrics. The grey lines show which agent called which tool.</p>
   </header>
   <div id="log" aria-live="polite"></div>
   <div class="hints" id="hints"></div>
   <form id="f">
-    <input id="q" autocomplete="off" placeholder="Is INC0428 still open?" aria-label="Your question">
+    <input id="q" autocomplete="off" placeholder="Is INC0428 still open and what is the payments error rate?" aria-label="Your question">
     <button id="send">Send</button>
   </form>
 </div>
@@ -46,7 +47,12 @@ button:disabled{opacity:.5;cursor:default}
 const log = document.getElementById("log"), q = document.getElementById("q"), send = document.getElementById("send");
 let sessionId = null;
 
-const HINTS = ["Is INC0428 still open?", "Show error logs for payments", "Which incidents are open, and do those services have errors in the logs?"];
+const HINTS = [
+  "Is INC0428 still open?",
+  "How many ERROR logs did notifications write on 20 September 2026?",
+  "What was the payments error rate from 02:00 to 05:00 UTC on 30 September 2026?",
+  "What is the status of INC0428, and what do the payments logs and metrics show from 01:00 UTC on 30 September 2026?"
+];
 for (const h of HINTS) {
   const b = document.createElement("button"); b.type = "button"; b.textContent = h;
   b.onclick = () => ask(h); document.getElementById("hints").append(b);
