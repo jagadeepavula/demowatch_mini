@@ -1,4 +1,4 @@
-.# Evals: how we test the assistant
+# Evals: how we test the assistant
 
 This folder is how we measure whether the agents answer correctly. Start here if you are new to evals.
 

@@ -129,7 +129,7 @@ top = sql("select service, count(*) c from itsm.incidents group by 1 order by 2 
 case("aggregation", "hard", "Which service had the most incidents in September, and how many?", f"{top[0][0]} with {top[0][1]}.",
      [top[0][0], str(top[0][1])], [CALL("itsm", "count_incidents", service=s) for s in
                                   ("payments", "checkout", "search", "auth", "inventory", "catalog", "notifications", "shipping")],
-     ["count_incidents"], [INC], derived=True)
+     [["count_incidents", "count_incidents_by_service"]], [INC], derived=True)
 old = sql("select incident_id, opened_at from itsm.incidents where status <> 'resolved' order by opened_at limit 1")[0]
 case("aggregation", "hard", "Which unresolved incident has been waiting the longest?", f"{old[0]}, opened {ts(old[1])} UTC (on hold).",
      [old[0]], [CALL("itsm", "list_incidents", status="on_hold", limit=200)], ["list_incidents"], [INC], ref="E14", derived=True)
@@ -266,7 +266,7 @@ kids = [r[0] for r in sql("select incident_id from itsm.incidents where parent_i
 case("cross_source", "hard", "Which incident was the root of the 12 September 2026 sign-in outage, and which other incidents did it cause?",
      f"INC0172 (auth, expired signing key) caused {', '.join(kids)}.", ["INC0172"] + kids,
      [CALL("itsm", "list_incidents", opened_from="2026-09-12", opened_to="2026-09-13", limit=200)],
-     [["list_incidents", "get_incident"]], [INC], ref="S04")
+     [["list_incidents", "get_incident", "get_related_incidents"]], [INC], ref="S04")
 n = one("select count(*) from logs.entries where service='notifications' and level='ERROR' and ts >= '2026-09-20 18:00+00' and ts < '2026-09-20 18:55+00'")
 case("cross_source", "hard", "How many ERROR lines did notifications log while INC0289 was open, and what was the root cause?",
      f"{n} ERROR lines between 18:00 and 18:55 UTC; root cause: {I('INC0289')[7]}.", [str(n), I("INC0289")[7]],

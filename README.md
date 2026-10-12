@@ -5,7 +5,7 @@ A small practice copy of Costco's Overwatch idea: an AI assistant for IT operati
 ```
 chat page (docs/, GitHub Pages) --HTTPS--> backend (server.py, Cloud Run)
                                               ops_assistant (root agent, Google ADK + Gemini)
-                                               |- incidents_agent --MCP--> itsm_server.py          (3 tools) ---\
+                                               |- incidents_agent --MCP--> itsm_server.py          (5 tools) ---\
                                                |- logs_agent      --MCP--> observability_server.py (3 tools) ----+--> Supabase Postgres
                                                '- metrics_agent   --MCP--> observability_server.py (2 tools) ---/    schemas: itsm, logs, metrics
 ```
@@ -15,7 +15,15 @@ chat page (docs/, GitHub Pages) --HTTPS--> backend (server.py, Cloud Run)
 - **Database**: Supabase Postgres with about 59,000 made-up rows for September 2026 (see `supabase/DATA_V2.md`).
 - **Chat page** (`docs/index.html`): plain HTML. GitHub Pages only serves static files, so the agents run in the backend and the page just calls `/chat`.
 
-## Run it on your own machine
+## If Jagadeep sent you his `.env` (team setup)
+Our team shares one Supabase database and one Google Cloud project, so you skip the account setup.
+1. Do step 1 below (clone, virtual environment, install).
+2. Save the `.env` file he sent into the project folder (next to `server.py`). Never commit it or paste it in a chat.
+3. Send him your Google account email so he can give you access to the Vertex AI project, then run `gcloud auth application-default login` with that account.
+4. Skip steps 2, 4 and the `gcloud services enable` line. **Do not run `data_gen/load_db.py`**: it wipes and reloads the shared database for everyone. The data is already loaded.
+5. Go to step 6 and run it.
+
+## Run it on your own machine (own accounts)
 
 You need: Python 3.11 or newer, git, a free [Supabase](https://supabase.com) account, and a way to call Gemini (a Google Cloud project with Vertex AI and the `gcloud` CLI, or a free Gemini API key; see `.env.example`).
 
@@ -75,7 +83,7 @@ Questions to try:
 All data is from **1 to 30 September 2026, in UTC**. Say the dates in your question.
 
 ## One database for everyone, or one each?
-Each person making their own free Supabase project (step 2) is the simplest, and nobody can break anyone else's data. The agents only read, but `load_db.py` replaces tables, so do not point it at a shared database by accident.
+The team setup above shares one. That is fine for learning, but the connection string can write as well as read, and `load_db.py` replaces tables, so only one person should run it. If you would rather have your own copy and break things freely, make your own free Supabase project (step 2).
 
 ## Deploying (done once, by whoever owns the Google Cloud project)
 The live backend is a Cloud Run service and the page is served from the `docs/` folder by GitHub Pages. Peers do not need to deploy anything.
@@ -108,14 +116,17 @@ The backend URL is public, so anyone with it spends your Gemini credit. `--max-i
 | Path | What it is |
 |---|---|
 | `ops_agent/agent.py` | the root agent and the three specialists, and how each gets its tools |
-| `mcp_servers/` | `itsm_server.py` (3 tools), `observability_server.py` (5 tools), `db.py` (the only database code) |
+| `mcp_servers/` | `itsm_server.py` (5 tools), `observability_server.py` (5 tools), `db.py` (the only database code) |
 | `server.py` | the `/chat` API around the agents; it also serves `docs/` |
 | `docs/` | the chat page and `config.js` (where the page sends questions) |
 | `supabase/schema_v2.sql`, `data_gen/` | the database tables and the generator that fills them; `supabase/DATA_V2.md` describes every table, scenario and awkward row |
-| `eval/`, `data_gen/make_golden_v2.py` | a starting point for evals (see below) |
+| `eval/`, `data_gen/make_golden_v2.py` | evals: the 64-question golden set, the runner that marks it, and saved runs. Start with `eval/README.md` |
+
+## Evals
+`eval/README.md` explains how we test the assistant and how to pick up the work. In short: `python eval/verify_golden.py` checks the golden answers against the database, and `python eval/run_eval.py --url <backend> --name my_run` asks the live chatbot all 64 questions and saves a scored run in `eval/runs/`. Our first baseline is in `eval/runs/baseline/`.
 
 ## Not done yet
-Evaluation and observability come next, as a team. `eval/` and `data_gen/make_golden_v2.py` are a first draft: 64 golden questions whose answers are read from the database. `python eval/verify_golden.py` checks that the tools agree with the database, and `python eval/run_eval.py --url <backend>` asks the live chatbot. Also still to do: CI/CD, gate tests, and a tool to read deployment changes (right now the agents say they do not have that).
+A review of the golden set by a domain expert, repeated trials, a release rule, and a calibrated model judge for answers that code rules cannot check. Also still to do: observability, CI/CD with gate tests, and a tool to read deployment changes (right now the agents say they do not have that).
 
 ## If something breaks
 | Symptom | Fix |

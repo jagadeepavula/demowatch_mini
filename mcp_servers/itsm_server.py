@@ -36,12 +36,15 @@ def get_incident(incident_id: str) -> dict:
 
 @mcp.tool()
 def list_incidents(service: str = "", status: str = "", priority: str = "",
-                   opened_from: str = "", opened_to: str = "", limit: int = 50) -> list[dict]:
-    """List incidents, newest first. All filters are optional; leave one empty to skip it.
+                   opened_from: str = "", opened_to: str = "", limit: int = 50, oldest_first: bool = False) -> list[dict]:
+    """List incidents, newest first (or oldest first with oldest_first=true, for 'which has been waiting the longest').
+    All filters are optional; leave one empty to skip it.
     service: payments, checkout, search, auth, inventory, catalog, notifications, shipping, loyalty.
     status: open, in_progress, on_hold or resolved. priority: P1 (worst) to P4.
-    opened_from / opened_to: UTC dates, from inclusive and to exclusive."""
-    sql = f"select * from itsm.incidents {WHERE} order by opened_at desc limit %(limit)s"
+    opened_from / opened_to: UTC dates, from inclusive and to exclusive.
+    'Unresolved' means status open, in_progress or on_hold: list each of those and compare."""
+    order = "asc" if oldest_first else "desc"
+    sql = f"select * from itsm.incidents {WHERE} order by opened_at {order} limit %(limit)s"
     return query(sql, {**_args(service, status, priority, opened_from, opened_to), "limit": max(1, min(limit, 200))})
 
 
@@ -53,6 +56,27 @@ def count_incidents(service: str = "", status: str = "", priority: str = "",
     rows = query(f"select count(*)::int as count from itsm.incidents {WHERE}",
                  _args(service, status, priority, opened_from, opened_to))
     return rows[0]
+
+
+@mcp.tool()
+def count_incidents_by_service(status: str = "", priority: str = "", opened_from: str = "", opened_to: str = "") -> list[dict]:
+    """Count incidents per service, highest first. Use this for 'which service has the most incidents'.
+    Optional filters: status, priority, opened_from / opened_to (same meaning as in list_incidents)."""
+    return query(f"select service, count(*)::int as count from itsm.incidents {WHERE} group by service order by count desc, service",
+                 _args("", status, priority, opened_from, opened_to))
+
+
+@mcp.tool()
+def get_related_incidents(incident_id: str) -> dict:
+    """Find the incidents linked to one incident: its parent (the incident it duplicates or was caused by)
+    and its children (incidents that name it as their parent). Use this for 'what else did it cause'."""
+    iid = incident_id.upper().strip()
+    me = query("select * from itsm.incidents where incident_id = %s", (iid,))
+    if not me:
+        return {"found": False, "message": f"No incident {incident_id}"}
+    parent = query("select * from itsm.incidents where incident_id = %s", (me[0]["parent_incident_id"],)) if me[0].get("parent_incident_id") else []
+    children = query("select * from itsm.incidents where parent_incident_id = %s order by opened_at", (iid,))
+    return {"incident_id": iid, "parent": parent[0] if parent else None, "children": children}
 
 
 if __name__ == "__main__":
