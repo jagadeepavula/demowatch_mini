@@ -1,0 +1,158 @@
+{
+  "meta": {
+    "run_id": "baseline",
+    "when": "2026-10-07 10:40:54",
+    "url": "https://demowatch-mini-704694697824.us-central1.run.app",
+    "trials": 1,
+    "split": "all",
+    "dataset": "golden_v2.jsonl",
+    "git_sha": "af3d54e",
+    "agent_py_hash": "effe8466",
+    "questions": 64,
+    "wall_seconds": 201,
+    "model": "gemini-2.5-flash"
+  },
+  "overall": {
+    "trials_run": 64,
+    "outcome": 48,
+    "strict": 38,
+    "agents": 55,
+    "tools": 56,
+    "args": 46,
+    "retried_requests": 0
+  },
+  "reliability": {
+    "questions": 64,
+    "k": 1,
+    "pass_at_k_outcome": 48,
+    "pass_at_k_strict": 38,
+    "pass_hat_k_outcome": 48,
+    "pass_hat_k_strict": 38
+  },
+  "latency_seconds": {
+    "p50": 4.5,
+    "p95": 15.4,
+    "mean": 6.3
+  },
+  "tokens_per_question": 5068,
+  "model_calls_per_question": 3.0,
+  "auto_failure_tags": {
+    "missing_fact": 5,
+    "wrong_agent": 9,
+    "wrong_args": 10,
+    "wrong_tool": 1,
+    "forbidden_content": 1
+  },
+  "by_category": {
+    "lookup": {
+      "n": 8,
+      "outcome": 7,
+      "agents": 8,
+      "tools": 8,
+      "args": 8,
+      "strict": 7,
+      "avg_seconds": 4.7
+    },
+    "aggregation": {
+      "n": 10,
+      "outcome": 8,
+      "agents": 9,
+      "tools": 9,
+      "args": 9,
+      "strict": 8,
+      "avg_seconds": 9.6
+    },
+    "log_count": {
+      "n": 6,
+      "outcome": 6,
+      "agents": 6,
+      "tools": 6,
+      "args": 6,
+      "strict": 6,
+      "avg_seconds": 4.3
+    },
+    "log_search": {
+      "n": 5,
+      "outcome": 4,
+      "agents": 5,
+      "tools": 5,
+      "args": 1,
+      "strict": 1,
+      "avg_seconds": 8.9
+    },
+    "metrics": {
+      "n": 7,
+      "outcome": 5,
+      "agents": 7,
+      "tools": 7,
+      "args": 6,
+      "strict": 5,
+      "avg_seconds": 5.5
+    },
+    "problems": {
+      "n": 3,
+      "outcome": 3,
+      "agents": 3,
+      "tools": 3,
+      "args": 2,
+      "strict": 2,
+      "avg_seconds": 6.4
+    },
+    "cross_source": {
+      "n": 8,
+      "outcome": 6,
+      "agents": 7,
+      "tools": 7,
+      "args": 5,
+      "strict": 4,
+      "avg_seconds": 10.0
+    },
+    "out_of_scope": {
+      "n": 5,
+      "outcome": 4,
+      "agents": 1,
+      "tools": 3,
+      "args": 3,
+      "strict": 1,
+      "avg_seconds": 1.8
+    },
+    "negative": {
+      "n": 6,
+      "outcome": 2,
+      "agents": 4,
+      "tools": 3,
+      "args": 3,
+      "strict": 2,
+      "avg_seconds": 5.4
+    },
+    "safety": {
+      "n": 6,
+      "outcome": 3,
+      "agents": 5,
+      "tools": 5,
+      "args": 3,
+      "strict": 2,
+      "avg_seconds": 3.4
+    }
+  },
+  "by_split": {
+    "dev": {
+      "n": 46,
+      "outcome": 35,
+      "agents": 40,
+      "tools": 42,
+      "args": 34,
+      "strict": 28,
+      "avg_seconds": 5.6
+    },
+    "heldout": {
+      "n": 18,
+      "outcome": 13,
+      "agents": 15,
+      "tools": 14,
+      "args": 12,
+      "strict": 10,
+      "avg_seconds": 8.1
+    }
+  }
+}

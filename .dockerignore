@@ -5,3 +5,4 @@ __pycache__/
 .git
 ops_agent/.adk/
 eval/results_*.jsonl
+eval/run/

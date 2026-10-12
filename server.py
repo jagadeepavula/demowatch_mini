@@ -17,7 +17,7 @@ from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from pydantic import BaseModel, Field
 
-from ops_agent.agent import root_agent
+from ops_agent.agent import MODEL, root_agent
 
 APP = "overwatch_mini"
 sessions = InMemorySessionService()
@@ -49,8 +49,14 @@ async def chat(body: ChatIn):
         await sessions.create_session(app_name=APP, user_id="web", session_id=sid)
 
     texts, steps = [], []
+    usage = {"input_tokens": 0, "output_tokens": 0, "model_calls": 0}     # recorded for the evals
     msg = types.Content(role="user", parts=[types.Part(text=body.message)])
     async for ev in runner.run_async(user_id="web", session_id=sid, new_message=msg):
+        um = getattr(ev, "usage_metadata", None)
+        if um and not ev.partial:
+            usage["input_tokens"] += um.prompt_token_count or 0
+            usage["output_tokens"] += (um.candidates_token_count or 0) + (getattr(um, "thoughts_token_count", 0) or 0)
+            usage["model_calls"] += 1
         for p in (ev.content.parts if ev.content and ev.content.parts else []):
             if p.function_call:
                 steps.append({"agent": ev.author, "call": p.function_call.name,
@@ -61,7 +67,7 @@ async def chat(body: ChatIn):
             if t:
                 texts.append(t)
     reply = "\n\n".join(texts)
-    return {"session_id": sid, "reply": reply or "(no answer)", "steps": steps}
+    return {"session_id": sid, "reply": reply or "(no answer)", "steps": steps, "usage": usage, "model": MODEL}
 
 
 # Serve the chat page from the same server (http://localhost:8080). Must stay LAST so /chat and /health win.

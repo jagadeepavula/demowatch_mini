@@ -17,18 +17,18 @@ ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT / ".env")
 sys.path.insert(0, str(ROOT / "mcp_servers"))
 sys.path.insert(0, str(ROOT / "eval"))
-import itsm_server, logs_server  # noqa: E402
+import itsm_server, observability_server as logs_server  # noqa: E402
 from common import has  # noqa: E402
 
-MODS = {"itsm": itsm_server, "logs": logs_server}
+MODS = {"itsm": itsm_server, "logs": logs_server, "observability": logs_server}
 bad = 0
-cases = [json.loads(l) for l in open(ROOT / "eval" / "golden_dataset.jsonl")]
+cases = [json.loads(l) for l in open(ROOT / "eval" / (sys.argv[1] if len(sys.argv) > 1 else "golden_v2.jsonl"), encoding="utf-8")]
 for g in cases:
     text, err = "", None
     try:
         for c in g["reference_calls"]:
             out = getattr(MODS[c["server"]], c["tool"])(**c["args"])
-            text += json.dumps(out, default=str) + (f" rows={len(out)} " if isinstance(out, list) else " ")
+            text += json.dumps(out, default=str, ensure_ascii=False) + (f" rows={len(out)} " if isinstance(out, list) else " ")
     except Exception as e:  # noqa: BLE001
         err = e
     missing = [] if g["derived"] else [f for f in g["must_include"] if not has(text, f)]

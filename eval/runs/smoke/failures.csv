@@ -1,0 +1,2 @@
+﻿run_id,case_id,trial,category,split,question,expected,reply,route_taken,auto_tag,all_auto_tags,human_tag,first_failing_step,note,severity,fix_idea
+smoke,G048,1,out_of_scope,dev,What was deployed to payments just before INC0428 opened?,"The agents have no deployment or change data, so they must say they do not have it (the database has CHG0112, but no tool reads it).",I do not have information about deployments.,,wrong_agent,wrong_agent,,,,,
